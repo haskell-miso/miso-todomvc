@@ -9,11 +9,5 @@ flags: +template-haskell
 source-repository-package
   type: git
   location: https://github.com/dmjio/miso
-  tag: 0333c71
-  -- branch: master
-
-source-repository-package
-  type: git
-  location: https://github.com/three-hs/three.hs
   branch: master
 

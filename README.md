@@ -1,4 +1,4 @@
-# :ramen: miso-todomvc
+# :ramen: 🗒️ ✔️ miso-todomvc
 
 ## Build and run
 

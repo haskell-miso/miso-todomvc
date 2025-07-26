@@ -1,112 +1,122 @@
-{-# LANGUAGE CPP               #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
-
+----------------------------------------------------------------------------
+{-# LANGUAGE CPP                #-}
+{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE RecordWildCards    #-}
+{-# LANGUAGE DeriveAnyClass     #-}
+{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE DerivingStrategies #-}
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Miso
+-- Copyright   :  (C) 2016-2025 David M. Johnson (@dmjio)
+-- License     :  BSD3-style (see the file LICENSE)
+-- Maintainer  :  David M. Johnson <code@dmj.io>
+-- Stability   :  experimental
+-- Portability :  non-portable
+----------------------------------------------------------------------------
 module Main where
-
+----------------------------------------------------------------------------
 import           Control.Monad.State
 import           Data.Aeson hiding (Object)
 import           Data.Bool
 import           GHC.Generics
-
+----------------------------------------------------------------------------
 import           Miso
 import           Miso.String (MisoString)
 import qualified Miso.String as S
 import qualified Miso.Style as CSS 
 import           Miso.Style ((=:))
-
+----------------------------------------------------------------------------
 default (MisoString)
-
+----------------------------------------------------------------------------
 #if defined(wasm32_HOST_ARCH)
 foreign export javascript "hs_start" main :: IO ()
 #endif
-
-data Model = Model
-    { entries :: [Entry]
-    , field :: MisoString
-    , uid :: Int
-    , visibility :: MisoString
-    , step :: Bool
-    }
-    deriving (Show, Generic, Eq)
-
-data Entry = Entry
-    { description :: MisoString
-    , completed :: Bool
-    , editing :: Bool
-    , eid :: Int
-    , focussed :: Bool
-    }
-    deriving (Show, Generic, Eq)
-
-instance ToJSON Entry
-instance ToJSON Model
-
-instance FromJSON Entry
-instance FromJSON Model
-
+----------------------------------------------------------------------------
+data Model
+  = Model
+  { entries :: [Entry]
+  , field :: MisoString
+  , uid :: Int
+  , visibility :: MisoString
+  , step :: Bool
+  } deriving stock (Show, Generic, Eq)
+    deriving anyclass (FromJSON, ToJSON)
+----------------------------------------------------------------------------
+data Entry
+  = Entry
+  { description :: MisoString
+  , completed :: Bool
+  , editing :: Bool
+  , eid :: Int
+  , focussed :: Bool
+  } deriving stock (Show, Generic, Eq)
+    deriving anyclass (FromJSON, ToJSON)
+----------------------------------------------------------------------------
 emptyModel :: Model
-emptyModel =
-    Model
-        { entries = []
-        , visibility = "All"
-        , field = mempty
-        , uid = 0
-        , step = False
-        }
-
+emptyModel
+  = Model
+  { entries = []
+  , visibility = "All"
+  , field = mempty
+  , uid = 0
+  , step = False
+  }
+----------------------------------------------------------------------------
 newEntry :: MisoString -> Int -> Entry
-newEntry desc eid =
-    Entry
-        { description = desc
-        , completed = False
-        , editing = False
-        , eid = eid
-        , focussed = False
-        }
-
+newEntry desc eid
+  = Entry
+  { description = desc
+  , completed = False
+  , editing = False
+  , eid = eid
+  , focussed = False
+  }
+----------------------------------------------------------------------------
 data Msg
-    = NoOp
-    | CurrentTime Int
-    | UpdateField MisoString
-    | EditingEntry Int Bool
-    | UpdateEntry Int MisoString
-    | Add
-    | Delete Int
-    | DeleteComplete
-    | Check Int Bool
-    | CheckAll Bool
-    | ChangeVisibility MisoString
-    | FocusOnInput
-    deriving (Show)
-
+  = NoOp
+  | CurrentTime Int
+  | UpdateField MisoString
+  | EditingEntry Int Bool
+  | UpdateEntry Int MisoString
+  | Add
+  | Delete Int
+  | DeleteComplete
+  | Check Int Bool
+  | CheckAll Bool
+  | ChangeVisibility MisoString
+  | FocusOnInput
+  deriving (Show)
+----------------------------------------------------------------------------
 main :: IO ()
 main = run (startComponent app)
-
+----------------------------------------------------------------------------
 app :: Component Model Msg
 app = (component emptyModel updateModel viewModel)
   { events = defaultEvents <> keyboardEvents
   , initialAction = Just FocusOnInput
+#ifdef VANILLA
+  -- dmj: when using vanilla GHC append the styles to <head> in dev mode
   , styles =
       [ Href "https://cdn.jsdelivr.net/npm/todomvc-common@1.0.5/base.min.css"
       , Href "https://cdn.jsdelivr.net/npm/todomvc-app-css@2.4.3/index.min.css"
       ]
+#endif
   }
-
+----------------------------------------------------------------------------
 updateModel :: Msg -> Effect Model Msg
 updateModel NoOp = pure ()
 updateModel FocusOnInput =
   io_ (focus "input-box")
-updateModel (CurrentTime time) = io_ $ consoleLog $ S.ms (show time)
+updateModel (CurrentTime time) =
+  io_ $ consoleLog $ S.ms (show time)
 updateModel Add = do
-    model@Model{..} <- get
-    put
-        model
-            { uid = uid + 1
-            , field = mempty
-            , entries = entries <> [newEntry field uid | not $ S.null field]
-            }
+  model@Model{..} <- get
+  put model
+    { uid = uid + 1
+    , field = mempty
+    , entries = entries <> [newEntry field uid | not $ S.null field]
+    }
 updateModel (UpdateField str) = modify update
   where
     update m = m { field = str }
@@ -145,7 +155,7 @@ updateModel (CheckAll isCompleted) =
     }
 updateModel (ChangeVisibility v) =
     modify $ \m -> m { visibility = v }
-
+----------------------------------------------------------------------------
 filterMap :: [a] -> (a -> Bool) -> (a -> a) -> [a]
 filterMap xs predicate f = go' xs
   where
@@ -153,7 +163,7 @@ filterMap xs predicate f = go' xs
     go' (y : ys)
         | predicate y = f y : go' ys
         | otherwise = y : go' ys
-
+----------------------------------------------------------------------------
 viewModel :: Model -> View Msg
 viewModel m@Model{..} =
     div_
@@ -167,7 +177,7 @@ viewModel m@Model{..} =
             ]
         , infoFooter
         ]
-
+----------------------------------------------------------------------------
 viewEntries :: MisoString -> [Entry] -> View Msg
 viewEntries visibility entries =
     section_
@@ -197,10 +207,10 @@ viewEntries visibility entries =
             "Completed" -> completed
             "Active" -> not completed
             _ -> True
-
+----------------------------------------------------------------------------
 viewKeyedEntry :: Entry -> View Msg
 viewKeyedEntry = viewEntry
-
+----------------------------------------------------------------------------
 viewEntry :: Entry -> View Msg
 viewEntry Entry{..} =
     li_
@@ -236,7 +246,7 @@ viewEntry Entry{..} =
             , onEnter $ EditingEntry eid False
             ]
         ]
-
+----------------------------------------------------------------------------
 viewControls :: Model -> MisoString -> [Entry] -> View Msg
 viewControls model visibility entries =
     footer_
@@ -250,7 +260,7 @@ viewControls model visibility entries =
   where
     entriesCompleted = length . filter completed $ entries
     entriesLeft = length entries - entriesCompleted
-
+----------------------------------------------------------------------------
 viewControlsCount :: Int -> View Msg
 viewControlsCount entriesLeft =
     span_
@@ -260,7 +270,7 @@ viewControlsCount entriesLeft =
         ]
   where
     item_ = S.pack $ bool " items" " item" (entriesLeft == 1)
-
+----------------------------------------------------------------------------
 viewControlsFilters :: MisoString -> View Msg
 viewControlsFilters visibility =
     ul_
@@ -271,7 +281,7 @@ viewControlsFilters visibility =
         , text " "
         , visibilitySwap "#/completed" "Completed" visibility
         ]
-
+----------------------------------------------------------------------------
 visibilitySwap :: MisoString -> MisoString -> MisoString -> View Msg
 visibilitySwap uri visibility actualVisibility =
     li_
@@ -283,7 +293,7 @@ visibilitySwap uri visibility actualVisibility =
             ]
             [text visibility]
         ]
-
+----------------------------------------------------------------------------
 viewControlsClear :: Model -> Int -> View Msg
 viewControlsClear _ entriesCompleted =
     button_
@@ -292,7 +302,7 @@ viewControlsClear _ entriesCompleted =
         , onClick DeleteComplete
         ]
         [text $ "Clear completed (" <> S.ms entriesCompleted <> ")"]
-
+----------------------------------------------------------------------------
 viewInput :: Model -> MisoString -> View Msg
 viewInput _ task =
     header_
@@ -309,11 +319,10 @@ viewInput _ task =
             , onEnter Add
             ]
         ]
-
+----------------------------------------------------------------------------
 onEnter :: Msg -> Attribute Msg
-onEnter action =
-    onKeyDown $ bool NoOp action . (== KeyCode 13)
-
+onEnter action = onKeyDown $ bool NoOp action . (== KeyCode 13)
+----------------------------------------------------------------------------
 infoFooter :: View Msg
 infoFooter =
     footer_
@@ -330,3 +339,4 @@ infoFooter =
             , a_ [href_ "http://todomvc.com"] [text "TodoMVC"]
             ]
         ]
+----------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards    #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Miso
+-- Module      :  View
 -- Copyright   :  (C) 2016-2025 David M. Johnson (@dmjio)
 -- License     :  BSD3-style (see the file LICENSE)
 -- Maintainer  :  David M. Johnson <code@dmj.io>
@@ -56,7 +56,7 @@ viewEntries visibility' entries =
             [for_ "toggle-all"]
             [text $ S.pack "Mark all as complete"]
         , ul_ [class_ "todo-list"] $
-            map viewKeyedEntry (filter isVisible entries) 
+            map viewEntry (filter isVisible entries) 
         ]
   where
     cssVisibility = bool "visible" "hidden" (null entries)
@@ -66,9 +66,6 @@ viewEntries visibility' entries =
             "Completed" -> _eCompleted
             "Active" -> not _eCompleted
             _ -> True
-----------------------------------------------------------------------------
-viewKeyedEntry :: Entry -> View Msg
-viewKeyedEntry = viewEntry
 ----------------------------------------------------------------------------
 viewEntry :: Entry -> View Msg
 viewEntry Entry{..} =

@@ -2,17 +2,17 @@
 {-# LANGUAGE OverloadedStrings  #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Miso
+-- Module      :  Update
 -- Copyright   :  (C) 2016-2025 David M. Johnson (@dmjio)
 -- License     :  BSD3-style (see the file LICENSE)
 -- Maintainer  :  David M. Johnson <code@dmj.io>
 -- Stability   :  experimental
 -- Portability :  non-portable
-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 module Update (Msg(..), updateModel) where
 ----------------------------------------------------------------------------
-import           Miso
-import           Miso.Lens as Lens
+import           Miso hiding (set)
+import           Miso.Lens
 import           Miso.String (MisoString)
 import qualified Miso.String as S
 ----------------------------------------------------------------------------
@@ -50,30 +50,20 @@ updateModel Add = do
 updateModel (UpdateField str) = 
   mField .= str
 updateModel (EditingEntry id' isEditing) =
-  mEntries %= \es -> 
-    filterMap es ((== id') . _eEid) (Lens.set eEditing isEditing . Lens.set eFocussed isEditing)
+  mEntries %= mapIf ((== id') . _eEid) (set eEditing isEditing . set eFocussed isEditing)
 updateModel (UpdateEntry id' task) =
-  mEntries %= \es ->
-    filterMap es ((== id') . _eEid) (Lens.set eDescription task)
+  mEntries %= mapIf ((== id') . _eEid) (set eDescription task)
 updateModel (Delete id') =
   mEntries %= filter ((/= id') . _eEid)
 updateModel DeleteComplete =
   mEntries %= filter (not . _eCompleted)
 updateModel (Check id' isCompleted) =
-  mEntries %= \es ->
-    filterMap es ((== id') . _eEid) (Lens.set eCompleted isCompleted)
+  mEntries %= mapIf ((== id') . _eEid) (set eCompleted isCompleted)
 updateModel (CheckAll isCompleted) =
-  mEntries %= \es ->
-    filterMap es (const True) (Lens.set eCompleted isCompleted)
+  mEntries %= map (set eCompleted isCompleted)
 updateModel (ChangeVisibility v) =
-    mVisibility .= v
+  mVisibility .= v
 ----------------------------------------------------------------------------
--- TODO refact?
-filterMap :: [a] -> (a -> Bool) -> (a -> a) -> [a]
-filterMap xs predicate f = go' xs
-  where
-    go' [] = []
-    go' (y : ys)
-        | predicate y = f y : go' ys
-        | otherwise = y : go' ys
+mapIf :: (a -> Bool) -> (a -> a) -> [a] -> [a]
+mapIf p f = map (\x -> if p x then f x else x)
 ----------------------------------------------------------------------------

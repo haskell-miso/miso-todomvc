@@ -31,7 +31,7 @@ executable app
   other-modules:
     Model, Update, View
   build-depends:
-    base, aeson, miso, mtl
+    base, miso
   default-language:
     GHC2024
   default-extensions:

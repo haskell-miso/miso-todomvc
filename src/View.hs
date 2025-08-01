@@ -38,8 +38,8 @@ viewModel m@Model{..} =
         , infoFooter
         ]
 ----------------------------------------------------------------------------
-viewEntries :: MisoString -> [Entry] -> View Msg
-viewEntries visibility' entries =
+viewEntries :: Visibility -> [Entry] -> View Msg
+viewEntries visibility entries =
     section_
         [ class_ "main"
         , CSS.style_ [ "visibility" =: cssVisibility ]
@@ -62,10 +62,10 @@ viewEntries visibility' entries =
     cssVisibility = bool "visible" "hidden" (null entries)
     allCompleted = all _eCompleted entries
     isVisible Entry{..} =
-        case visibility' of
-            "Completed" -> _eCompleted
-            "Active" -> not _eCompleted
-            _ -> True
+        case visibility of
+            Completed -> _eCompleted
+            Active -> not _eCompleted
+            All -> True
 ----------------------------------------------------------------------------
 viewEntry :: Entry -> View Msg
 viewEntry Entry{..} =
@@ -103,14 +103,14 @@ viewEntry Entry{..} =
             ]
         ]
 ----------------------------------------------------------------------------
-viewControls :: Model -> MisoString -> [Entry] -> View Msg
-viewControls model visibility' entries =
+viewControls :: Model -> Visibility -> [Entry] -> View Msg
+viewControls model visibility entries =
     footer_
         [ class_ "footer"
         , hidden_ (null entries)
         ]
         [ viewControlsCount entriesLeft
-        , viewControlsFilters visibility'
+        , viewControlsFilters visibility
         , viewControlsClear model entriesCompleted
         ]
   where
@@ -127,27 +127,27 @@ viewControlsCount entriesLeft =
   where
     item_ = S.pack $ bool " items" " item" (entriesLeft == 1)
 ----------------------------------------------------------------------------
-viewControlsFilters :: MisoString -> View Msg
-viewControlsFilters visibility' =
+viewControlsFilters :: Visibility -> View Msg
+viewControlsFilters visibility =
     ul_
         [class_ "filters"]
-        [ visibilitySwap "#/" "All" visibility'
+        [ visibilitySwap "#/" All visibility
         , text " "
-        , visibilitySwap "#/active" "Active" visibility'
+        , visibilitySwap "#/active" Active visibility
         , text " "
-        , visibilitySwap "#/completed" "Completed" visibility'
+        , visibilitySwap "#/completed" Completed visibility
         ]
 ----------------------------------------------------------------------------
-visibilitySwap :: MisoString -> MisoString -> MisoString -> View Msg
-visibilitySwap uri visibility' actualVisibility =
+visibilitySwap :: MisoString -> Visibility -> Visibility -> View Msg
+visibilitySwap uri visibility actualVisibility =
     li_
         []
         [ a_
             [ href_ uri
-            , class_ $ S.concat ["selected" | visibility' == actualVisibility]
-            , onClick (ChangeVisibility visibility')
+            , class_ $ S.concat ["selected" | visibility == actualVisibility]
+            , onClick (ChangeVisibility visibility)
             ]
-            [text visibility']
+            [ text (S.ms visibility) ]
         ]
 ----------------------------------------------------------------------------
 viewControlsClear :: Model -> Int -> View Msg
@@ -196,4 +196,3 @@ infoFooter =
             ]
         ]
 ----------------------------------------------------------------------------
-

@@ -31,9 +31,8 @@ data Msg
   | DeleteComplete
   | Check Int Bool
   | CheckAll Bool
-  | ChangeVisibility MisoString
+  | ChangeVisibility Visibility
   | FocusOnInput
-  deriving (Show)
 ----------------------------------------------------------------------------
 updateModel :: Msg -> Effect Model Msg
 updateModel NoOp = pure ()

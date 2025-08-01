@@ -1,7 +1,4 @@
-----------------------------------------------------------------------------
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE DeriveAnyClass     #-}
-{-# LANGUAGE DerivingStrategies #-}
+-----------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings  #-}
 -----------------------------------------------------------------------------
 -- |
@@ -14,14 +11,9 @@
 ----------------------------------------------------------------------------
 module Model where
 ----------------------------------------------------------------------------
-import           Data.Aeson -- hiding ((.=), Object)
-import           GHC.Generics
-----------------------------------------------------------------------------
 import           Miso.Lens
 import           Miso.Lens.TH
-import           Miso.String (MisoString)
-----------------------------------------------------------------------------
-default (MisoString)
+import           Miso.String (MisoString, ToMisoString(..))
 ----------------------------------------------------------------------------
 data Entry
   = Entry
@@ -30,8 +22,7 @@ data Entry
   , _eEditing :: Bool
   , _eEid :: Int
   , _eFocussed :: Bool
-  } deriving stock (Show, Generic, Eq)
-    deriving anyclass (FromJSON, ToJSON)
+  } deriving (Eq)
 ----------------------------------------------------------------------------
 makeLenses ''Entry
 ----------------------------------------------------------------------------
@@ -45,15 +36,26 @@ newEntry desc eid
   , _eFocussed = False
   }
 ----------------------------------------------------------------------------
+data Visibility
+  = All
+  | Active
+  | Completed
+  deriving (Eq)
+----------------------------------------------------------------------------
+instance ToMisoString Visibility where
+  toMisoString = \case
+    All -> "All"
+    Active -> "Active"
+    Completed -> "Completed"
+----------------------------------------------------------------------------
 data Model
   = Model
   { _mEntries :: [Entry]
   , _mField :: MisoString
   , _mUid :: Int
-  , _mVisibility :: MisoString
+  , _mVisibility :: Visibility
   , _mStep :: Bool
-  } deriving stock (Show, Generic, Eq)
-    deriving anyclass (FromJSON, ToJSON)
+  } deriving (Eq)
 ----------------------------------------------------------------------------
 makeLenses ''Model
 ----------------------------------------------------------------------------
@@ -61,7 +63,7 @@ emptyModel :: Model
 emptyModel
   = Model
   { _mEntries = []
-  , _mVisibility = "All"
+  , _mVisibility = All
   , _mField = mempty
   , _mUid = 0
   , _mStep = False

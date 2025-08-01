@@ -1,6 +1,5 @@
 ----------------------------------------------------------------------------
 {-# LANGUAGE CPP                #-}
-{-# LANGUAGE OverloadedStrings  #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Main
@@ -29,9 +28,12 @@ app :: Component Model Msg
 app = (component emptyModel updateModel viewModel)
   { events = defaultEvents <> keyboardEvents
   , initialAction = Just FocusOnInput
+#ifdef VANILLA
+  -- dmj: when using vanilla GHC append the styles to <head> in dev mode
   , styles =
       [ Href "https://cdn.jsdelivr.net/npm/todomvc-common@1.0.5/base.min.css"
       , Href "https://cdn.jsdelivr.net/npm/todomvc-app-css@2.4.3/index.min.css"
       ]
+#endif
   }
 ----------------------------------------------------------------------------

@@ -28,10 +28,12 @@ executable app
     src
   main-is:
     Main.hs
+  other-modules:
+    Model, Update, View
   build-depends:
     base, aeson, miso, mtl
   default-language:
-    GHC2021
+    GHC2024
   default-extensions:
     CPP TemplateHaskell
  

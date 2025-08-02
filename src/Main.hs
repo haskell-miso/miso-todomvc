@@ -25,7 +25,7 @@ import           Miso
 import           Miso.String (MisoString)
 import qualified Miso.String as S
 import qualified Miso.Style as CSS 
-import           Miso.Style ((=:))
+import           Miso.Style
 ----------------------------------------------------------------------------
 default (MisoString)
 ----------------------------------------------------------------------------

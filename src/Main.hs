@@ -88,9 +88,9 @@ data Msg
   deriving (Show)
 ----------------------------------------------------------------------------
 main :: IO ()
-main = run (startComponent app)
+main = run (startApp app)
 ----------------------------------------------------------------------------
-app :: Component Model Msg
+app :: App Model Msg
 app = (component emptyModel updateModel viewModel)
   { events = defaultEvents <> keyboardEvents
   , initialAction = Just FocusOnInput
@@ -103,7 +103,7 @@ app = (component emptyModel updateModel viewModel)
 #endif
   }
 ----------------------------------------------------------------------------
-updateModel :: Msg -> Effect Model Msg
+updateModel :: Msg -> Transition Model Msg
 updateModel NoOp = pure ()
 updateModel FocusOnInput =
   io_ (focus "input-box")
@@ -163,7 +163,7 @@ filterMap xs predicate f = go' xs
         | predicate y = f y : go' ys
         | otherwise = y : go' ys
 ----------------------------------------------------------------------------
-viewModel :: Model -> View Msg
+viewModel :: Model -> View model Msg
 viewModel m@Model{..} =
     div_
         [ class_ "todomvc-wrapper"
@@ -177,11 +177,11 @@ viewModel m@Model{..} =
         , infoFooter
         ]
 ----------------------------------------------------------------------------
-viewEntries :: MisoString -> [Entry] -> View Msg
+viewEntries :: MisoString -> [Entry] -> View model Msg
 viewEntries visibility entries =
     section_
         [ class_ "main"
-        , CSS.style_ [ "visibility" =: cssVisibility ]
+        , CSS.style_ [ CSS.visibility cssVisibility ]
         ]
         [ input_
             [ class_ "toggle-all"
@@ -207,10 +207,10 @@ viewEntries visibility entries =
             "Active" -> not completed
             _ -> True
 ----------------------------------------------------------------------------
-viewKeyedEntry :: Entry -> View Msg
+viewKeyedEntry :: Entry -> View model Msg
 viewKeyedEntry = viewEntry
 ----------------------------------------------------------------------------
-viewEntry :: Entry -> View Msg
+viewEntry :: Entry -> View model Msg
 viewEntry Entry{..} =
     li_
         [ class_ $
@@ -246,7 +246,7 @@ viewEntry Entry{..} =
             ]
         ]
 ----------------------------------------------------------------------------
-viewControls :: Model -> MisoString -> [Entry] -> View Msg
+viewControls :: Model -> MisoString -> [Entry] -> View model Msg
 viewControls model visibility entries =
     footer_
         [ class_ "footer"
@@ -260,7 +260,7 @@ viewControls model visibility entries =
     entriesCompleted = length . filter completed $ entries
     entriesLeft = length entries - entriesCompleted
 ----------------------------------------------------------------------------
-viewControlsCount :: Int -> View Msg
+viewControlsCount :: Int -> View model Msg
 viewControlsCount entriesLeft =
     span_
         [class_ "todo-count"]
@@ -270,7 +270,7 @@ viewControlsCount entriesLeft =
   where
     item_ = S.pack $ bool " items" " item" (entriesLeft == 1)
 ----------------------------------------------------------------------------
-viewControlsFilters :: MisoString -> View Msg
+viewControlsFilters :: MisoString -> View model Msg
 viewControlsFilters visibility =
     ul_
         [class_ "filters"]
@@ -281,7 +281,7 @@ viewControlsFilters visibility =
         , visibilitySwap "#/completed" "Completed" visibility
         ]
 ----------------------------------------------------------------------------
-visibilitySwap :: MisoString -> MisoString -> MisoString -> View Msg
+visibilitySwap :: MisoString -> MisoString -> MisoString -> View model Msg
 visibilitySwap uri visibility actualVisibility =
     li_
         []
@@ -293,7 +293,7 @@ visibilitySwap uri visibility actualVisibility =
             [text visibility]
         ]
 ----------------------------------------------------------------------------
-viewControlsClear :: Model -> Int -> View Msg
+viewControlsClear :: Model -> Int -> View model Msg
 viewControlsClear _ entriesCompleted =
     button_
         [ class_ "clear-completed"
@@ -302,7 +302,7 @@ viewControlsClear _ entriesCompleted =
         ]
         [text $ "Clear completed (" <> S.ms entriesCompleted <> ")"]
 ----------------------------------------------------------------------------
-viewInput :: Model -> MisoString -> View Msg
+viewInput :: Model -> MisoString -> View model Msg
 viewInput _ task =
     header_
         [class_ "header"]
@@ -322,7 +322,7 @@ viewInput _ task =
 onEnter :: Msg -> Attribute Msg
 onEnter action = onKeyDown $ bool NoOp action . (== KeyCode 13)
 ----------------------------------------------------------------------------
-infoFooter :: View Msg
+infoFooter :: View model Msg
 infoFooter =
     footer_
         [class_ "info"]

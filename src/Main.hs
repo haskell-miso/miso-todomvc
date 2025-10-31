@@ -22,9 +22,11 @@ import           Data.Bool
 import           GHC.Generics
 ----------------------------------------------------------------------------
 import           Miso
+import           Miso.Html
+import           Miso.Html.Property hiding (label_)
 import           Miso.String (MisoString)
 import qualified Miso.String as S
-import qualified Miso.Style as CSS 
+import qualified Miso.CSS as CSS 
 ----------------------------------------------------------------------------
 default (MisoString)
 ----------------------------------------------------------------------------
@@ -242,7 +244,7 @@ viewEntry Entry{..} =
             , id_ $ "todo-" <> S.ms eid
             , onInput $ UpdateEntry eid
             , onBlur $ EditingEntry eid False
-            , onEnter $ EditingEntry eid False
+            , onEnter (EditingEntry eid False) NoOp
             ]
         ]
 ----------------------------------------------------------------------------
@@ -315,12 +317,9 @@ viewInput _ task =
             , value_ task
             , name_ "newTodo"
             , onInput UpdateField
-            , onEnter Add
+            , onEnter NoOp Add
             ]
         ]
-----------------------------------------------------------------------------
-onEnter :: Msg -> Attribute Msg
-onEnter action = onKeyDown $ bool NoOp action . (== KeyCode 13)
 ----------------------------------------------------------------------------
 infoFooter :: View model Msg
 infoFooter =

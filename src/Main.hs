@@ -1,5 +1,6 @@
 ----------------------------------------------------------------------------
 {-# LANGUAGE CPP                #-}
+{-# LANGUAGE LambdaCase         #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE RecordWildCards    #-}
 {-# LANGUAGE DeriveAnyClass     #-}
@@ -106,55 +107,58 @@ app = (component emptyModel updateModel viewModel)
   }
 ----------------------------------------------------------------------------
 updateModel :: Msg -> Transition Model Msg
-updateModel NoOp = pure ()
-updateModel FocusOnInput =
-  io_ (focus "input-box")
-updateModel (CurrentTime time) =
-  io_ $ consoleLog $ S.ms (show time)
-updateModel Add = do
-  model@Model{..} <- get
-  put model
-    { uid = uid + 1
-    , field = mempty
-    , entries = entries <> [newEntry field uid | not $ S.null field]
-    }
-updateModel (UpdateField str) = modify update
-  where
-    update m = m { field = str }
-updateModel (EditingEntry id' isEditing) = do
-  modify $ \m ->
-    m { entries =
-          filterMap (entries m) (\t -> eid t == id') $ \t ->
-            t { editing = isEditing
-              , focussed = isEditing
-              }
+updateModel = \case
+  NoOp ->
+    pure ()
+  FocusOnInput ->
+    io_ (focus "input-box")
+  CurrentTime time ->
+    io_ $ consoleLog $ S.ms (show time)
+  Add -> do
+    model@Model{..} <- get
+    put model
+      { uid = uid + 1
+      , field = mempty
+      , entries = entries <> [newEntry field uid | not $ S.null field]
       }
-updateModel (UpdateEntry id' task) =
-  modify $ \m -> m
-    { entries = filterMap (entries m) ((== id') . eid) $ \t ->
-        t { description = task }
-    }
-updateModel (Delete id') =
-  modify $ \m -> m
-   { entries = filter (\t -> eid t /= id') (entries m)
-   }
-updateModel DeleteComplete = do
-  modify $ \m -> m
-    { entries = filter (not . completed) (entries m)
-    }
-updateModel (Check id' isCompleted) = do
-  modify $ \m -> m
-    { entries =
-        filterMap (entries m) (\t -> eid t == id') $ \t ->
-          t { completed = isCompleted }
-    }
-updateModel (CheckAll isCompleted) =
-  modify $ \m -> m
-    { entries =
-        filterMap (entries m) (const True) $ \t ->
-          t { completed = isCompleted }
-    }
-updateModel (ChangeVisibility v) =
+  UpdateField str ->
+    modify update
+      where
+        update m = m { field = str }
+  EditingEntry id' isEditing ->
+    modify $ \m ->
+      m { entries =
+            filterMap (entries m) (\t -> eid t == id') $ \t ->
+              t { editing = isEditing
+                , focussed = isEditing
+                }
+        }
+  UpdateEntry id' task ->
+    modify $ \m -> m
+      { entries = filterMap (entries m) ((== id') . eid) $ \t ->
+          t { description = task }
+      }
+  Delete id' -> 
+    modify $ \m -> m
+     { entries = filter (\t -> eid t /= id') (entries m)
+     }
+  DeleteComplete ->
+    modify $ \m -> m
+      { entries = filter (not . completed) (entries m)
+      }
+  Check id' isCompleted ->
+    modify $ \m -> m
+      { entries =
+          filterMap (entries m) (\t -> eid t == id') $ \t ->
+            t { completed = isCompleted }
+      }
+  CheckAll isCompleted ->
+    modify $ \m -> m
+      { entries =
+          filterMap (entries m) (const True) $ \t ->
+            t { completed = isCompleted }
+      }
+  ChangeVisibility v ->
     modify $ \m -> m { visibility = v }
 ----------------------------------------------------------------------------
 filterMap :: [a] -> (a -> Bool) -> (a -> a) -> [a]

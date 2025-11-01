@@ -26,7 +26,7 @@ import           Miso.Html
 import           Miso.Html.Property hiding (label_)
 import           Miso.String (MisoString)
 import qualified Miso.String as S
-import qualified Miso.CSS as CSS 
+import qualified Miso.CSS as CSS
 ----------------------------------------------------------------------------
 default (MisoString)
 ----------------------------------------------------------------------------
@@ -229,7 +229,7 @@ viewEntry Entry{..} =
                 , onClick $ Check eid (not completed)
                 ]
             , label_
-                [onDoubleClick $ EditingEntry eid True]
+                [onDoubleClick (EditingEntry eid True) ]
                 [text description]
             , button_
                 [ class_ "destroy"
@@ -241,10 +241,10 @@ viewEntry Entry{..} =
             [ class_ "edit"
             , value_ description
             , name_ "title"
-            , id_ $ "todo-" <> S.ms eid
-            , onInput $ UpdateEntry eid
-            , onBlur $ EditingEntry eid False
-            , onEnter (EditingEntry eid False) NoOp
+            , id_ ("todo-" <> S.ms eid)
+            , onInput (UpdateEntry eid)
+            , onBlur (EditingEntry eid False)
+            , onEnter NoOp (EditingEntry eid False)
             ]
         ]
 ----------------------------------------------------------------------------

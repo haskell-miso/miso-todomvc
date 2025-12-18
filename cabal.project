@@ -9,4 +9,4 @@ flags: +template-haskell
 source-repository-package
   type: git
   location: https://github.com/dmjio/miso
-  tag: af6d075dcf31e46c599068bc23936572dc8ea19f
+  tag: 620e673e81cafeece1c1c1447312b6372a6ee3dc

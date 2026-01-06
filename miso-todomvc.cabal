@@ -31,7 +31,7 @@ executable app
   main-is:
     Main.hs
   build-depends:
-    base, aeson, miso, mtl
+    base, miso, mtl
   default-language:
     GHC2021
   default-extensions:

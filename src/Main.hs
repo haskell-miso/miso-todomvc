@@ -18,14 +18,13 @@
 module Main where
 ----------------------------------------------------------------------------
 import           Control.Monad.State
-import           Data.Aeson hiding (Object)
 import           Data.Bool
 import           GHC.Generics
 ----------------------------------------------------------------------------
 import           Miso
 import           Miso.Html
+import           Miso.JSON
 import           Miso.Html.Property hiding (label_)
-import           Miso.String (MisoString)
 import qualified Miso.String as S
 import qualified Miso.CSS as CSS
 ----------------------------------------------------------------------------

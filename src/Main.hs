@@ -90,12 +90,13 @@ data Msg
   deriving (Show)
 ----------------------------------------------------------------------------
 main :: IO ()
-main = run (startApp app)
+main = run (startApp events app)
+  where
+    events = defaultEvents <> keyboardEvents
 ----------------------------------------------------------------------------
 app :: App Model Msg
 app = (component emptyModel updateModel viewModel)
-  { events = defaultEvents <> keyboardEvents
-  , initialAction = Just FocusOnInput
+  { initialAction = Just FocusOnInput
 #ifdef VANILLA
   -- dmj: when using vanilla GHC append the styles to <head> in dev mode
   , styles =

@@ -94,7 +94,7 @@ main = startApp (defaultEvents <> keyboardEvents) app
 ----------------------------------------------------------------------------
 app :: App Model Msg
 app = (component emptyModel updateModel viewModel)
-  { initialAction = Just FocusOnInput
+  { mount = Just FocusOnInput
 #ifdef VANILLA
   -- dmj: when using vanilla GHC append the styles to <head> in dev mode
   , styles =

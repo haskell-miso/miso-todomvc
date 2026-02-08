@@ -104,7 +104,7 @@ app = (component emptyModel updateModel viewModel)
 #endif
   }
 ----------------------------------------------------------------------------
-updateModel :: Msg -> Transition Model Msg
+updateModel :: Msg -> Effect parent Model Msg
 updateModel = \case
   NoOp ->
     pure ()

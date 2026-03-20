@@ -30,7 +30,7 @@ import qualified Miso.CSS as CSS
 ----------------------------------------------------------------------------
 default (MisoString)
 ----------------------------------------------------------------------------
-#if defined(wasm32_HOST_ARCH)
+#ifdef WASM
 foreign export javascript "hs_start" main :: IO ()
 #endif
 ----------------------------------------------------------------------------
@@ -95,8 +95,8 @@ main = startApp (defaultEvents <> keyboardEvents) app
 app :: App Model Msg
 app = (component emptyModel updateModel viewModel)
   { mount = Just FocusOnInput
-#ifdef VANILLA
-  -- dmj: when using vanilla GHC append the styles to <head> in dev mode
+#ifdef INTERACTIVE
+  -- dmj: when using WASM repl mode append styles to <head> in dev mode
   , styles =
       [ Href "https://cdn.jsdelivr.net/npm/todomvc-common@1.0.5/base.min.css"
       , Href "https://cdn.jsdelivr.net/npm/todomvc-app-css@2.4.3/index.min.css"

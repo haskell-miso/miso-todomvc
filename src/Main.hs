@@ -98,8 +98,8 @@ app = (component emptyModel updateModel viewModel)
 #ifdef INTERACTIVE
   -- dmj: when using WASM repl mode append styles to <head> in dev mode
   , styles =
-      [ Href "https://cdn.jsdelivr.net/npm/todomvc-common@1.0.5/base.min.css"
-      , Href "https://cdn.jsdelivr.net/npm/todomvc-app-css@2.4.3/index.min.css"
+      [ Href "https://cdn.jsdelivr.net/npm/todomvc-common@1.0.5/base.min.css" False
+      , Href "https://cdn.jsdelivr.net/npm/todomvc-app-css@2.4.3/index.min.css" False
       ]
 #endif
   }
@@ -136,7 +136,7 @@ updateModel = \case
       { entries = filterMap (entries m) ((== id') . eid) $ \t ->
           t { description = task }
       }
-  Delete id' -> 
+  Delete id' ->
     modify $ \m -> m
      { entries = filter (\t -> eid t /= id') (entries m)
      }

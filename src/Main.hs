@@ -276,7 +276,7 @@ viewControlsClear :: Model -> Int -> View model Msg
 viewControlsClear _ entriesCompleted =
     button_
         [ class_ "clear-completed"
-        , prop "hidden" (entriesCompleted == 0)
+        , hidden_ (entriesCompleted == 0)
         , onClick DeleteComplete
         ]
         [text $ "Clear completed (" <> S.ms entriesCompleted <> ")"]

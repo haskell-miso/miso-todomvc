@@ -19,6 +19,7 @@
 module Main where
 ----------------------------------------------------------------------------
 import           Control.Category ((.))
+import           Control.Monad
 import qualified Data.IntMap as IM
 import           Data.IntMap (IntMap)
 import           Data.Bool
@@ -120,10 +121,11 @@ updateModel = \case
     io_ $ consoleLog (S.ms time)
   Add -> do
     value <- use field
-    field .= mempty
-    uid += 1
-    nextId <- use uid
-    entries %= IM.insert nextId (newEntry value)
+    unless (S.null value) $ do
+      field .= mempty
+      uid += 1
+      nextId <- use uid
+      entries %= IM.insert nextId (newEntry value)
   UpdateField str -> do
     field .= str
   EditingEntry idx isEditing ->
